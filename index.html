@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>교토 쇼핑 리스트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --surface:#F5F5F5; --ink:#1C1C1C; --sub:#6B6B6B; --faint:#A3A3A3;
+  --line:#E3E3E3; --strong-line:#1C1C1C; --track:#E6E6E6;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#141414; --surface:#1F1F1F; --ink:#EDEDED; --sub:#A0A0A0; --faint:#6E6E6E;
+    --line:#2E2E2E; --strong-line:#EDEDED; --track:#333333;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141414; --surface:#1F1F1F; --ink:#EDEDED; --sub:#A0A0A0; --faint:#6E6E6E;
+  --line:#2E2E2E; --strong-line:#EDEDED; --track:#333333;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:560px;margin:0 auto;padding:24px 20px 120px}
+.num{font-variant-numeric:tabular-nums}
+
+header h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.3px}
+header p{margin:2px 0 0;color:var(--sub);font-size:14px}
+
+.summary{margin:20px 0 8px;padding:18px;background:var(--surface);border-radius:14px}
+.budget-row{display:flex;align-items:center;gap:8px}
+.budget-row label{font-size:14px;font-weight:700;flex:none;width:44px}
+.budget-row input{flex:1;min-width:0;text-align:right;font-weight:700}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none;background:var(--bg)}
+.seg button{font:inherit;font-size:14px;padding:8px 12px;border:none;background:transparent;color:var(--sub);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:700}
+
+.bar{height:8px;background:var(--track);border-radius:4px;margin:16px 0 14px;overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:var(--ink);border-radius:4px;transition:width .25s}
+.bar.over span{background:repeating-linear-gradient(135deg,var(--ink) 0 6px,var(--sub) 6px 12px)}
+
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;row-gap:6px;column-gap:12px;font-size:15px}
+dt{color:var(--sub)}
+dd{margin:0;text-align:right}
+dd b{font-weight:700}
+dd .s{color:var(--sub);font-size:13px;margin-left:6px}
+.status{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:14px;font-weight:700}
+
+.rate{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--sub);margin:14px 0 4px;flex-wrap:wrap}
+.rate input{width:80px;text-align:right;padding:6px 8px}
+.rate-note{font-size:12px;color:var(--faint);margin:0 0 18px}
+
+input,select{
+  font:inherit;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;
+}
+input:focus,select:focus{outline:none;border-color:var(--strong-line)}
+button:focus-visible,input:focus-visible,select:focus-visible,.item:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.group-toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:14px;color:var(--sub)}
+.group-toggle .seg button{padding:6px 12px}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.qchip{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--sub);border-radius:999px;padding:3px 11px}
+.qchip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);font-weight:700}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--sub);border-radius:999px;padding:5px 13px}
+.chip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);font-weight:700}
+
+.group h2{font-size:14px;font-weight:700;margin:22px 0 0;padding-bottom:8px;border-bottom:1px solid var(--strong-line);display:flex;justify-content:space-between;align-items:baseline}
+.group h2 span{font-weight:400;color:var(--sub);font-size:13px}
+ul{list-style:none;margin:0;padding:0}
+.item{display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:start;padding:13px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.item input[type=checkbox]{width:20px;height:20px;margin:3px 0 0;accent-color:var(--ink);cursor:pointer}
+.name{font-weight:500;word-break:keep-all;overflow-wrap:anywhere}
+.qty{color:var(--sub);font-size:14px;margin-left:4px}
+.note{color:var(--sub);font-size:13px;margin-top:2px;overflow-wrap:anywhere}
+.price{text-align:right;white-space:nowrap}
+.price .y{font-weight:700}
+.price .w{font-size:13px;color:var(--sub)}
+.item.done .name,.item.done .y{color:var(--faint);text-decoration:line-through}
+.item.done .note,.item.done .w,.item.done .qty{color:var(--faint)}
+.empty{text-align:center;color:var(--sub);padding:40px 12px;font-size:15px}
+.hint{font-size:12px;color:var(--faint);text-align:center;margin-top:14px}
+
+.fab{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  font:inherit;font-weight:700;font-size:16px;cursor:pointer;
+  background:var(--ink);color:var(--bg);border:none;border-radius:999px;
+  padding:13px 30px;box-shadow:0 4px 14px rgba(0,0,0,.18);
+}
+
+dialog{border:none;padding:0;width:100%;max-width:560px;margin:auto auto 0;background:var(--bg);color:var(--ink);border-radius:16px 16px 0 0;max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+
+/* photos */
+.mid{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.txt{min-width:0}
+.thumb{flex:none;width:52px;height:52px;padding:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);cursor:zoom-in}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.item.done .thumb{opacity:.45}
+.photo-field{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+.photo-box{flex:none;width:84px;height:84px;border:1px dashed var(--line);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--surface);color:var(--faint);font-size:12px}
+.photo-box img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-box img[hidden],.photo-box span[hidden]{display:none}
+.photo-box.has{border-style:solid}
+.photo-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pbtn{font:inherit;font-size:14px;font-weight:700;padding:7px 12px;border-radius:8px;border:1px solid var(--ink);background:var(--bg);color:var(--ink);cursor:pointer}
+.pbtn.soft{font-weight:400;border-color:var(--line);color:var(--sub)}
+.photo-hint{flex-basis:100%;margin:2px 0 0;font-size:12px;color:var(--faint)}
+.sr{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+dialog.viewer{margin:auto;max-width:min(92vw,560px);width:auto;background:transparent;border-radius:12px;max-height:none}
+dialog.viewer img{display:block;max-width:100%;max-height:78vh;border-radius:12px}
+dialog.viewer p{margin:10px 0 0;text-align:center;color:#fff;font-size:13px}
+dialog.viewer::backdrop{background:rgba(0,0,0,.82)}
+.sheet{padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px))}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.sheet h3{margin:0;font-size:19px}
+.sheet h3:focus{outline:none}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:13px;color:var(--sub);margin-bottom:5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.preview{font-size:13px;color:var(--sub);margin-top:5px;min-height:1.5em}
+.btns{display:flex;gap:8px;margin-top:8px}
+.btns button{flex:1;font:inherit;font-weight:700;font-size:16px;padding:12px;border-radius:10px;cursor:pointer}
+.primary{background:var(--ink);color:var(--bg);border:1px solid var(--ink)}
+.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.del{flex:none;font:inherit;font-size:14px;color:var(--sub);background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btns label{flex:1;font-weight:700;font-size:16px;padding:12px;border-radius:10px;cursor:pointer;text-align:center;border:1px solid var(--line);color:var(--ink)}
+.bk-h{margin:18px 0 8px;font-size:15px}
+.bk-desc{margin:0 0 8px;font-size:13px;color:var(--sub)}
+.bk-msg{margin:12px 0 0;font-size:14px;font-weight:700;min-height:1.4em}
+textarea{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;resize:vertical}
+.foot{margin-top:30px;font-size:12px;color:var(--faint);text-align:center}
+.foot button{font:inherit;font-size:12px;color:var(--faint);background:none;border:none;text-decoration:underline;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>교토 쇼핑 리스트</h1>
+    <p>여행 쇼핑 메모 · 엔화·원화 같이 보기</p>
+  </header>
+
+  <section class="summary" aria-live="polite">
+    <div class="budget-row">
+      <label for="budget">예산</label>
+      <input id="budget" class="num" type="text" inputmode="numeric" placeholder="금액 입력" autocomplete="off">
+      <div class="seg" role="group" aria-label="예산 단위">
+        <button type="button" data-unit="won">원</button>
+        <button type="button" data-unit="yen">엔</button>
+      </div>
+    </div>
+    <div class="bar" id="bar"><span></span></div>
+    <dl class="num">
+      <dt>예상 합계</dt><dd><b id="tYen">¥0</b><span class="s" id="tWon">₩0</span></dd>
+      <dt>구매 완료</dt><dd><b id="dYen">¥0</b><span class="s" id="dWon">₩0</span></dd>
+      <dt>예산</dt><dd><b id="bYen">–</b><span class="s" id="bWon"></span></dd>
+    </dl>
+    <div class="status num" id="status"></div>
+  </section>
+
+  <div class="rate">
+    <label for="rate">환율</label><span>100엔 =</span>
+    <input id="rate" class="num" type="number" inputmode="decimal" min="0" step="0.1"><span>원</span>
+  </div>
+  <p class="rate-note">기본값은 2026년 10월 중순 기준이에요. 출발 전에 그날 환율로 한 번 바꿔주세요.</p>
+
+  <div class="group-toggle">
+    <span>묶어 보기</span>
+    <div class="seg" role="group" aria-label="묶어 보기 기준" id="groupSeg">
+      <button type="button" data-group="cat">카테고리</button>
+      <button type="button" data-group="store">구매처</button>
+    </div>
+  </div>
+  <div class="chips" id="chips" role="toolbar" aria-label="목록 필터"></div>
+  <div id="list"></div>
+  <p class="hint">상품을 누르면 수정하거나 지울 수 있어요</p>
+
+  <p class="foot">리스트는 이 폰에만 저장돼요 · <button id="backupBtn" type="button">백업</button> · <button id="resetBtn" type="button">전체 지우기</button></p>
+</div>
+
+<button class="fab" id="addBtn" type="button">＋ 상품 추가</button>
+
+<dialog id="sheet" aria-labelledby="sheetTitle">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h3 id="sheetTitle" tabindex="-1">상품 추가</h3>
+      <button class="del" type="button" id="delBtn" hidden>삭제</button>
+    </div>
+    <div class="photo-field">
+      <div class="photo-box" id="photoBox"><span id="photoEmpty">사진 없음</span><img id="photoPrev" alt="상품 사진 미리보기" hidden></div>
+      <div class="photo-actions">
+        <label class="pbtn" for="fPhoto" id="photoPick">사진 추가</label>
+        <input class="sr" id="fPhoto" type="file" accept="image/*" tabindex="-1">
+        <button class="pbtn soft" type="button" id="photoRemove" hidden>사진 삭제</button>
+        <p class="photo-hint" id="photoHint">사진을 찍거나 앨범에서 고를 수 있어요</p>
+      </div>
+    </div>
+    <div class="field">
+      <label for="fName">제품명</label>
+      <input id="fName" type="text" placeholder="예: 동전파스 156매" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="fStore">구매처</label>
+      <input id="fStore" type="text" placeholder="예: 돈키호테, 니시키시장" autocomplete="off">
+      <div class="quick" id="storeQuick"></div>
+    </div>
+    <div class="two">
+      <div class="field">
+        <label for="fCat">카테고리</label>
+        <select id="fCat"></select>
+      </div>
+      <div class="field">
+        <label for="fQty">수량</label>
+        <input id="fQty" class="num" type="number" inputmode="numeric" min="1" step="1" value="1">
+      </div>
+    </div>
+    <div class="field">
+      <label for="fYen">개당 가격 (엔)</label>
+      <input id="fYen" class="num" type="number" inputmode="numeric" min="0" step="1" placeholder="예: 980">
+      <div class="preview num" id="fPreview"></div>
+    </div>
+    <div class="field">
+      <label for="fNote">비고</label>
+      <input id="fNote" type="text" placeholder="예: 엄마 부탁, 2층 의약품 코너" autocomplete="off">
+    </div>
+    <p id="sheetMsg" role="alert" hidden style="margin:0 0 10px;font-size:14px;font-weight:700;color:var(--ink)"></p>
+    <div class="btns">
+      <button class="ghost" type="button" id="cancelBtn">취소</button>
+      <button class="primary" type="button" id="saveBtn">저장</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="backup" aria-labelledby="backupTitle">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h3 id="backupTitle" tabindex="-1">백업</h3>
+      <button class="del" type="button" id="backupClose">닫기</button>
+    </div>
+    <p class="bk-desc">리스트는 이 폰의 브라우저에만 저장돼요. 브라우저 기록·데이터를 지우거나 폰을 바꾸기 전에 백업해 두세요.</p>
+    <h4 class="bk-h">파일로 백업 (사진 포함)</h4>
+    <div class="btns">
+      <button class="primary" type="button" id="bkSave">백업 파일 저장</button>
+      <label for="bkFile">파일 불러오기</label>
+    </div>
+    <input class="sr" id="bkFile" type="file" accept=".json,application/json" tabindex="-1">
+    <h4 class="bk-h">글자로 백업 (사진 제외)</h4>
+    <p class="bk-desc">복사한 글자를 카톡 ‘나와의 채팅’이나 메모장에 붙여넣어 보관하세요.</p>
+    <textarea id="bkText" rows="3" placeholder="불러올 때는 여기에 백업 글자를 붙여넣으세요"></textarea>
+    <div class="btns">
+      <button class="ghost" type="button" id="bkCopy">백업 글자 복사</button>
+      <button class="ghost" type="button" id="bkPaste">글자로 불러오기</button>
+    </div>
+    <p id="bkMsg" class="bk-msg" role="status"></p>
+  </div>
+</dialog>
+
+<dialog id="viewer" class="viewer" aria-label="상품 사진">
+  <img id="viewerImg" alt="">
+  <p>화면을 누르면 닫혀요</p>
+</dialog>
+
+<script>
+const CATS = ["의약품","화장품","과자·식품","주류","생활용품","기타"];
+const ALL = "*all*";
+const KEY = "kyoto-donki-v1";
+const DEFAULT_RATE = 850;
+// Friends start with an empty list.
+const SAMPLE = { v:3, rate: DEFAULT_RATE, budget: 0, budgetUnit: "won", groupBy: "cat", items: [] };
+
+let state = load();
+let filter = ALL;
+let editingId = null;
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){
+      const s = JSON.parse(raw);
+      if(s && Array.isArray(s.items)){
+        if(!s.v){ s.v = 2; s.rate = DEFAULT_RATE; s.budget = 0; s.budgetUnit = "won"; }
+        // v3 added stores: everything written before was meant for Don Quijote
+        if(s.v < 3){ s.items.forEach(i => { if(i.store === undefined) i.store = "돈키호테"; }); s.groupBy = "cat"; s.v = 3; }
+        return s;
+      }
+    }
+  }catch(e){}
+  return structuredClone(SAMPLE);
+}
+function save(){ state.updatedAt = Date.now(); try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+const rate = () => Number(state.rate) || 0;
+const toWon = y => Math.round(y * rate() / 100 / 10) * 10;
+const toYen = w => rate() ? Math.round(w * 100 / rate()) : 0;
+const fmt = n => Math.round(n).toLocaleString("ko-KR");
+const yen = n => "¥" + fmt(n);
+const won = n => "₩" + fmt(n);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function budgetYen(){
+  const b = Number(state.budget) || 0;
+  return state.budgetUnit === "yen" ? b : toYen(b);
+}
+function budgetWon(){
+  const b = Number(state.budget) || 0;
+  return state.budgetUnit === "won" ? b : toWon(b);
+}
+
+function renderSummary(){
+  const total = state.items.reduce((a,i)=>a+i.yen*i.qty,0);
+  const done = state.items.filter(i=>i.done).reduce((a,i)=>a+i.yen*i.qty,0);
+  document.getElementById("tYen").textContent = yen(total);
+  document.getElementById("tWon").textContent = "약 " + won(toWon(total));
+  document.getElementById("dYen").textContent = yen(done);
+  document.getElementById("dWon").textContent = "약 " + won(toWon(done));
+
+  const bY = budgetYen(), bW = budgetWon();
+  const bar = document.getElementById("bar");
+  const status = document.getElementById("status");
+  if(!state.budget){
+    document.getElementById("bYen").textContent = "–";
+    document.getElementById("bWon").textContent = "";
+    bar.classList.remove("over"); bar.firstElementChild.style.width = "0";
+    status.textContent = "예산을 입력하면 남은 금액을 계산해 드려요";
+    status.style.fontWeight = "400";
+    return;
+  }
+  status.style.fontWeight = "";
+  document.getElementById("bYen").textContent = state.budgetUnit==="yen" ? yen(bY) : won(bW);
+  document.getElementById("bWon").textContent = state.budgetUnit==="yen" ? "약 " + won(bW) : "약 " + yen(bY);
+  const pct = bY ? Math.min(100, total / bY * 100) : 100;
+  bar.firstElementChild.style.width = pct + "%";
+  bar.classList.toggle("over", total > bY);
+  const diff = bY - total;
+  status.textContent = diff >= 0
+    ? `예산까지 ${yen(diff)} (약 ${won(toWon(diff))}) 남았어요`
+    : `예산보다 ${yen(-diff)} (약 ${won(toWon(-diff))}) 넘었어요`;
+}
+
+const NO_STORE = "구매처 미정";
+const storeOf = i => (i.store || "").trim();
+function storesUsed(){
+  const s = [];
+  state.items.forEach(i => { const k = storeOf(i); if(!s.includes(k)) s.push(k); });
+  return s.sort((a,b) => (a==="" ? 1 : 0) - (b==="" ? 1 : 0));
+}
+function renderList(){
+  const byStore = state.groupBy === "store";
+  document.querySelectorAll("#groupSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.group === (byStore ? "store" : "cat")));
+  const keys = byStore ? storesUsed() : CATS.filter(c => state.items.some(i=>i.cat===c));
+  const label = k => byStore ? (k || NO_STORE) : k;
+  const keyOf = i => byStore ? storeOf(i) : i.cat;
+  if(filter !== ALL && !keys.includes(filter)) filter = ALL;
+  document.getElementById("chips").innerHTML = [ALL, ...keys].map(k =>
+    `<button class="chip" type="button" aria-pressed="${k===filter}" data-key="${esc(k)}">${esc(k===ALL ? "전체" : label(k))}</button>`).join("");
+
+  const list = document.getElementById("list");
+  if(!state.items.length){
+    list.innerHTML = `<div class="empty">아직 담은 상품이 없어요.<br>아래 ‘상품 추가’로 시작해 보세요.</div>`;
+    return;
+  }
+  const shown = filter===ALL ? keys : [filter];
+  list.innerHTML = shown.map(key => {
+    const items = state.items.filter(i => keyOf(i) === key);
+    if(!items.length) return "";
+    const sub = items.reduce((a,i)=>a+i.yen*i.qty,0);
+    return `<section class="group">
+      <h2>${esc(label(key))} <span class="num">${items.length}개 · ${yen(sub)}</span></h2>
+      <ul>${items.map(i=>{
+        const other = byStore ? i.cat : storeOf(i);
+        const line = [other, i.note].filter(Boolean).map(esc).join(" · ");
+        return `
+        <li class="item ${i.done?"done":""}" data-edit="${i.id}" tabindex="0">
+          <input type="checkbox" data-toggle="${i.id}" ${i.done?"checked":""} aria-label="${esc(i.name)} 구매 완료">
+          <div class="mid">
+            ${photos[String(i.id)] ? `<button class="thumb" type="button" data-photo="${i.id}" aria-label="${esc(i.name)} 사진 크게 보기"><img src="${photos[String(i.id)]}" alt=""></button>` : ""}
+            <div class="txt">
+              <div class="name">${esc(i.name)}${i.qty>1?`<span class="qty num">×${i.qty}</span>`:""}</div>
+              ${line?`<div class="note">${line}</div>`:""}
+            </div>
+          </div>
+          <div class="price num">
+            <div class="y">${yen(i.yen*i.qty)}</div>
+            <div class="w">${won(toWon(i.yen*i.qty))}</div>
+          </div>
+        </li>`;}).join("")}</ul>
+    </section>`;
+  }).join("");
+}
+function render(){ renderSummary(); renderList(); }
+
+/* ---------- photos: shrunk on the phone, kept in this browser's IndexedDB ---------- */
+const photos = {};          // item id (string) -> data URL
+let idb = null;
+function openIDB(){
+  return new Promise(res => {
+    try{
+      const req = indexedDB.open("kyoto-donki-photos", 1);
+      req.onupgradeneeded = () => req.result.createObjectStore("photos");
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => res(null);
+    }catch(e){ res(null); }
+  });
+}
+function idbWrite(fn){
+  return new Promise(res => {
+    if(!idb) return res(false);
+    try{
+      const tx = idb.transaction("photos", "readwrite");
+      fn(tx.objectStore("photos"));
+      tx.oncomplete = () => res(true);
+      tx.onerror = tx.onabort = () => res(false);
+    }catch(e){ res(false); }
+  });
+}
+function loadPhotos(){
+  return new Promise(res => {
+    if(!idb) return res();
+    try{
+      const tx = idb.transaction("photos", "readonly");
+      const s = tx.objectStore("photos");
+      const k = s.getAllKeys(), v = s.getAll();
+      tx.oncomplete = () => { k.result.forEach((key, n) => { photos[String(key)] = v.result[n]; }); res(); };
+      tx.onerror = () => res();
+    }catch(e){ res(); }
+  });
+}
+async function setPhoto(id, url){
+  id = String(id);
+  if(url){ photos[id] = url; if(!(await idbWrite(s => s.put(url, id)))) alertPhoto(); }
+  else { delete photos[id]; idbWrite(s => s.delete(id)); }
+}
+function alertPhoto(){
+  const h = document.getElementById("photoHint");
+  if(h) h.textContent = "사진을 저장하지 못했어요. 저장 공간을 확인해 주세요.";
+}
+function readAsDataURL(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+}
+// Photos are kept small enough (< ~230 KB as text) to fit in one database document.
+const PHOTO_LIMIT = 230000;
+async function fitPhoto(src){
+  const img = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; });
+  let out = src;
+  for(const [max, q] of [[640, .75], [640, .6], [480, .6], [360, .55]]){
+    const sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    out = c.toDataURL("image/jpeg", q);
+    if(out.length <= PHOTO_LIMIT) break;
+  }
+  return out;
+}
+async function shrinkImage(file){ return fitPhoto(await readAsDataURL(file)); }
+
+const budgetEl = document.getElementById("budget");
+const segBtns = document.querySelectorAll(".budget-row .seg button");
+function syncBudgetUI(){
+  budgetEl.value = state.budget ? fmt(state.budget) : "";
+  segBtns.forEach(b => b.setAttribute("aria-pressed", b.dataset.unit === state.budgetUnit));
+}
+budgetEl.addEventListener("input", () => {
+  const n = Number(budgetEl.value.replace(/[^\d]/g,"")) || 0;
+  state.budget = n;
+  budgetEl.value = n ? fmt(n) : "";
+  save(); renderSummary();
+});
+segBtns.forEach(b => b.addEventListener("click", () => {
+  if(b.dataset.unit === state.budgetUnit) return;
+  if(state.budget) state.budget = b.dataset.unit === "yen" ? toYen(state.budget) : toWon(state.budget);
+  state.budgetUnit = b.dataset.unit;
+  syncBudgetUI(); save(); renderSummary();
+}));
+
+const rateEl = document.getElementById("rate");
+rateEl.value = state.rate;
+rateEl.addEventListener("input", () => { state.rate = Number(rateEl.value)||0; save(); render(); updatePreview(); });
+
+document.getElementById("chips").addEventListener("click", e => {
+  const b = e.target.closest("[data-key]"); if(!b) return;
+  filter = b.dataset.key; renderList();
+});
+document.querySelectorAll("#groupSeg button").forEach(b => b.addEventListener("click", () => {
+  if(state.groupBy === b.dataset.group) return;
+  state.groupBy = b.dataset.group; filter = ALL; save(); renderList();
+}));
+const listEl = document.getElementById("list");
+listEl.addEventListener("click", e => {
+  const th = e.target.closest("[data-photo]");
+  if(th){
+    const url = photos[String(th.dataset.photo)];
+    if(url){ document.getElementById("viewerImg").src = url; document.getElementById("viewer").showModal(); }
+    return;
+  }
+  if(e.target.dataset.toggle){
+    const it = state.items.find(i=>i.id==e.target.dataset.toggle);
+    if(it){ it.done = e.target.checked; save(); render(); }
+    return;
+  }
+  const row = e.target.closest("[data-edit]");
+  if(row) openSheet(Number(row.dataset.edit));
+});
+listEl.addEventListener("keydown", e => {
+  if(e.key === "Enter" && e.target.matches(".item")) openSheet(Number(e.target.dataset.edit));
+});
+
+const sheet = document.getElementById("sheet");
+const f = {name:fName, store:fStore, cat:fCat, qty:fQty, yen:fYen, note:fNote};
+const DEFAULT_STORES = ["돈키호테","드럭스토어","편의점","니시키시장"];
+function renderQuick(){
+  const names = [...DEFAULT_STORES];
+  storesUsed().forEach(s => { if(s && !names.includes(s)) names.push(s); });
+  const cur = f.store.value.trim();
+  document.getElementById("storeQuick").innerHTML = names.slice(0, 10).map(n =>
+    `<button class="qchip" type="button" data-store="${esc(n)}" aria-pressed="${n===cur}">${esc(n)}</button>`).join("");
+}
+document.getElementById("storeQuick").addEventListener("click", e => {
+  const b = e.target.closest("[data-store]"); if(!b) return;
+  f.store.value = f.store.value.trim() === b.dataset.store ? "" : b.dataset.store;
+  renderQuick();
+});
+fStore.addEventListener("input", renderQuick);
+f.cat.innerHTML = CATS.map(c=>`<option>${c}</option>`).join("");
+function updatePreview(){
+  const y = Number(f.yen.value)||0, q = Math.max(1, Number(f.qty.value)||1);
+  document.getElementById("fPreview").textContent =
+    y ? `개당 약 ${won(toWon(y))}` + (q>1 ? ` · ${q}개 ${yen(y*q)} (약 ${won(toWon(y*q))})` : "") : "";
+}
+f.yen.addEventListener("input", updatePreview);
+f.qty.addEventListener("input", updatePreview);
+
+function openSheet(id=null){
+  editingId = id;
+  const it = id ? state.items.find(i=>i.id===id) : null;
+  document.getElementById("sheetTitle").textContent = it ? "상품 수정" : "상품 추가";
+  document.getElementById("saveBtn").textContent = it ? "수정 저장" : "리스트에 추가";
+  document.getElementById("delBtn").hidden = !it;
+  resetDelBtn();
+  f.name.value = it?.name ?? "";
+  const byStore = state.groupBy === "store";
+  f.cat.value = it?.cat ?? (!byStore && filter!==ALL ? filter : CATS[0]);
+  f.store.value = it ? storeOf(it) : (byStore && filter!==ALL ? filter : "");
+  renderQuick();
+  f.qty.value = it?.qty ?? 1;
+  f.yen.value = it?.yen ?? "";
+  f.note.value = it?.note ?? "";
+  f.name.placeholder = "예: 동전파스 156매";
+  updatePreview();
+  sheetMsg("");
+  pendingPhoto = undefined;
+  showPhoto(it ? photos[String(it.id)] : null);
+  sheet.showModal();
+  // Editing: focus the title instead of the name field so the keyboard doesn't pop up.
+  if(it) document.getElementById("sheetTitle").focus();
+  else setTimeout(()=>f.name.focus(), 50);
+}
+document.getElementById("addBtn").addEventListener("click", ()=>openSheet());
+
+// photo picking inside the sheet: undefined = unchanged, null = remove, string = new photo
+let pendingPhoto;
+const photoInput = document.getElementById("fPhoto");
+function showPhoto(url){
+  const img = document.getElementById("photoPrev");
+  img.hidden = !url; if(url) img.src = url; else img.removeAttribute("src");
+  document.getElementById("photoEmpty").hidden = !!url;
+  document.getElementById("photoBox").classList.toggle("has", !!url);
+  document.getElementById("photoPick").textContent = url ? "사진 바꾸기" : "사진 추가";
+  document.getElementById("photoRemove").hidden = !url;
+  document.getElementById("photoHint").textContent = "사진을 찍거나 앨범에서 고를 수 있어요";
+}
+photoInput.addEventListener("change", async () => {
+  const file = photoInput.files && photoInput.files[0];
+  photoInput.value = "";
+  if(!file) return;
+  document.getElementById("photoHint").textContent = "사진을 준비하는 중…";
+  try{
+    pendingPhoto = await shrinkImage(file);
+    showPhoto(pendingPhoto);
+  }catch(e){
+    document.getElementById("photoHint").textContent = "이 사진은 불러올 수 없어요. 다른 사진을 골라주세요.";
+  }
+});
+document.getElementById("photoRemove").addEventListener("click", () => { pendingPhoto = null; showPhoto(null); });
+const viewer = document.getElementById("viewer");
+viewer.addEventListener("click", () => viewer.close());
+document.getElementById("cancelBtn").addEventListener("click", ()=>sheet.close());
+sheet.addEventListener("click", e => { if(e.target === sheet) sheet.close(); });
+
+document.getElementById("saveBtn").addEventListener("click", () => {
+  // Blur first so the phone keyboard commits any half-typed (Korean) text before we read the fields.
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  setTimeout(saveItem, 30);
+});
+function sheetMsg(t){
+  const m = document.getElementById("sheetMsg");
+  m.textContent = t || ""; m.hidden = !t;
+}
+function saveItem(){
+  try{
+    const name = f.name.value.trim();
+    if(!name){ sheetMsg("제품명을 입력해 주세요"); return; }
+    const data = {
+      name, cat:f.cat.value || CATS[0],
+      qty:Math.max(1, Math.round(Number(f.qty.value)||1)),
+      yen:Math.max(0, Math.round(Number(String(f.yen.value).replace(/[^\d.]/g,""))||0)),
+      note:f.note.value.trim(),
+      store:f.store.value.trim()
+    };
+    let id = editingId;
+    const existing = id ? state.items.find(i=>i.id===id) : null;
+    if(existing) Object.assign(existing, data);
+    else { id = Date.now(); state.items.push({id, done:false, ...data}); }
+    sheet.close();
+    if(pendingPhoto !== undefined) setPhoto(id, pendingPhoto);
+    save(); render();
+  }catch(e){
+    sheetMsg("저장 중 문제가 생겼어요: " + (e && e.message || e));
+  }
+}
+// Browser confirm() popups are blocked on this page, so deletion uses a two-tap confirm instead.
+const delBtn = document.getElementById("delBtn");
+let delArmed = false;
+function resetDelBtn(){
+  delArmed = false;
+  delBtn.textContent = "삭제";
+  delBtn.style.fontWeight = "";
+  delBtn.style.color = "";
+}
+delBtn.addEventListener("click", () => {
+  const it = state.items.find(i=>i.id===editingId);
+  if(!it) return;
+  if(!delArmed){
+    delArmed = true;
+    delBtn.textContent = "한 번 더 누르면 삭제";
+    delBtn.style.fontWeight = "700";
+    delBtn.style.color = "var(--ink)";
+    return;
+  }
+  setPhoto(it.id, null);
+  state.items = state.items.filter(i=>i!==it); save(); render(); sheet.close();
+});
+[f.name, f.store, f.yen, f.note].forEach(el => el.addEventListener("keydown", e => {
+  if(e.key==="Enter"){ e.preventDefault(); document.getElementById("saveBtn").click(); }
+}));
+
+const resetBtn = document.getElementById("resetBtn");
+let resetArmed = false, resetTimer;
+resetBtn.addEventListener("click", () => {
+  if(!resetArmed){
+    resetArmed = true;
+    resetBtn.textContent = "한 번 더 누르면 지금 리스트가 지워져요";
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => { resetArmed = false; resetBtn.textContent = "전체 지우기"; }, 4000);
+    return;
+  }
+  clearTimeout(resetTimer);
+  resetArmed = false; resetBtn.textContent = "전체 지우기";
+  state = structuredClone(SAMPLE); rateEl.value = state.rate; filter=ALL;
+  Object.keys(photos).forEach(k => { delete photos[k]; });
+  idbWrite(s => s.clear());
+  syncBudgetUI(); save(); render();
+});
+
+syncBudgetUI();
+render();
+/* ---------- backup ---------- */
+const backup = document.getElementById("backup");
+const bkMsg = t => { document.getElementById("bkMsg").textContent = t || ""; };
+document.getElementById("backupBtn").addEventListener("click", () => {
+  bkMsg(""); document.getElementById("bkText").value = "";
+  backup.showModal(); document.getElementById("backupTitle").focus();
+});
+document.getElementById("backupClose").addEventListener("click", () => backup.close());
+backup.addEventListener("click", e => { if(e.target === backup) backup.close(); });
+
+function makeBackup(withPhotos){
+  const out = {app:"kyoto-shopping-list", version:1, savedAt:new Date().toISOString(), state};
+  if(withPhotos) out.photos = {...photos};
+  return JSON.stringify(out);
+}
+async function restore(text){
+  let obj;
+  try{ obj = JSON.parse(String(text).trim()); }catch(e){ return bkMsg("백업 내용을 읽을 수 없어요. 전체를 빠짐없이 붙여넣었는지 확인해 주세요."); }
+  if(!obj || obj.app !== "kyoto-shopping-list" || !obj.state || !Array.isArray(obj.state.items)) return bkMsg("이 리스트의 백업이 아니에요.");
+  if(state.items.length && !confirm(`지금 리스트(${state.items.length}개)를 백업 내용(${obj.state.items.length}개)으로 바꿀까요?`)) return;
+  state = JSON.parse(JSON.stringify(obj.state));
+  if(!state.groupBy) state.groupBy = "cat";
+  if(obj.photos){
+    Object.keys(photos).forEach(k => delete photos[k]);
+    await idbWrite(s => s.clear());
+    for(const [k, v] of Object.entries(obj.photos)){ if(typeof v === "string" && v.startsWith("data:image/")){ photos[k] = v; await idbWrite(s => s.put(v, k)); } }
+  }
+  rateEl.value = state.rate; filter = ALL;
+  save(); syncBudgetUI(); render();
+  bkMsg(`불러왔어요. 상품 ${state.items.length}개`);
+}
+document.getElementById("bkSave").addEventListener("click", () => {
+  const blob = new Blob([makeBackup(true)], {type:"application/json"});
+  const a = document.createElement("a");
+  const d = new Date();
+  a.href = URL.createObjectURL(blob);
+  a.download = `shopping-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  bkMsg("백업 파일을 저장했어요. 아이폰은 ‘파일’ 앱의 다운로드 폴더에 있어요.");
+});
+document.getElementById("bkFile").addEventListener("change", async e => {
+  const file = e.target.files && e.target.files[0]; e.target.value = "";
+  if(!file) return;
+  try{ await restore(await file.text()); }catch(err){ bkMsg("파일을 읽지 못했어요."); }
+});
+document.getElementById("bkCopy").addEventListener("click", async () => {
+  const text = makeBackup(false);
+  const ta = document.getElementById("bkText");
+  try{ await navigator.clipboard.writeText(text); bkMsg("복사했어요. 메모장이나 카톡에 붙여넣어 보관하세요."); }
+  catch(e){ ta.value = text; ta.focus(); ta.select(); bkMsg("아래 칸의 글자를 전체 선택해서 복사해 주세요."); }
+});
+document.getElementById("bkPaste").addEventListener("click", () => {
+  const t = document.getElementById("bkText").value;
+  if(!t.trim()) return bkMsg("먼저 위 칸에 백업 글자를 붙여넣어 주세요.");
+  restore(t);
+});
+
+openIDB().then(db => { idb = db; return loadPhotos(); }).then(renderList);
+</script>
+</body>
+</html>
